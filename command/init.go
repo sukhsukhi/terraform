@@ -28,6 +28,7 @@ func (c *InitCommand) Run(args []string) int {
 	cmdFlags.Var((*variables.FlagAny)(&flagConfigExtra), "backend-config", "")
 	cmdFlags.BoolVar(&flagGet, "get", true, "")
 	cmdFlags.BoolVar(&c.forceInitCopy, "force-copy", false, "suppress prompts about copying state data")
+	cmdFlags.BoolVar(&c.stateLock, "lock", true, "lock state during migration")
 
 	cmdFlags.Usage = func() { c.Ui.Error(c.Help()) }
 	if err := cmdFlags.Parse(args); err != nil {
@@ -232,6 +233,8 @@ Options:
                        equivalent to providing a "yes" to all confirmation
                        prompts.
 
+  -lock=true           Lock the state file during migration when locking
+                       is supported
 `
 	return strings.TrimSpace(helpText)
 }
