@@ -136,7 +136,21 @@ func (n *EvalInputProvider) Eval(ctx EvalContext) (interface{}, error) {
 	// Set the input that we received so that child modules don't attempt
 	// to ask for input again.
 	if config != nil && len(config.Config) > 0 {
-		ctx.SetProviderInput(n.Name, config.Config)
+		// This repository of provider input results on the context doesn't
+		// retain config.ComputedKeys, so we need to filter those out here
+		// in order that later users of this data won't try to use the unknown
+		// value placeholder as if it were a literal value. This map is just
+		// of known values we've been able to complete so far; dynamic stuff
+		// will be merged in by EvalBuildProviderConfig on subsequent
+		// (post-input) walks.
+		confMap := config.Config
+		if config.ComputedKeys != nil {
+			for _, key := range config.ComputedKeys {
+				delete(confMap, key)
+			}
+		}
+
+		ctx.SetProviderInput(n.Name, confMap)
 	} else {
 		ctx.SetProviderInput(n.Name, map[string]interface{}{})
 	}
